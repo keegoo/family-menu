@@ -1,0 +1,15 @@
+.dish-grid {
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+    .dish-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 960px) {
+    .dish-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

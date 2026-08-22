@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router'
 import Home from './pages/Home'
+import Dish from './pages/Dish'
+
 
 const STYLES = {
   header: {
@@ -41,6 +43,7 @@ export default function App() {
       <main style={STYLES.main}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/dish/:id" element={<Dish />} />
         </Routes>
       </main>
     </BrowserRouter>
