@@ -4,10 +4,12 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -n api,web -c blue,green \"node --watch server/index.js\" \"vite\"",
+    "seed": "node server/seed.js",
     "build": "vite build",
     "lint": "eslint ."
   },
   "dependencies": {
+    "better-sqlite3": "^13.0.3",
     "express": "^5.2.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
