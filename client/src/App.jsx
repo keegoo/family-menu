@@ -16,10 +16,6 @@ const STYLES = {
     fontWeight: 700,
     margin: '12px 0'
   },
-  nav: {
-    display: 'flex',
-    gap: 16
-  },
   link: {
     color: '#333',
     textDecoration: 'none'
@@ -35,10 +31,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <header style={STYLES.header}>
-        <h1 style={STYLES.title}>Family Menu</h1>
-        <nav style={STYLES.nav}>
-          <Link to="/" style={STYLES.link}>Menu</Link>
-        </nav>
+        <h1 style={STYLES.title}>
+          <Link to="/" style={STYLES.link}>Family Menu</Link>
+        </h1>
       </header>
       <main style={STYLES.main}>
         <Routes>
