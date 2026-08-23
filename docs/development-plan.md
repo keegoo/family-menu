@@ -60,8 +60,9 @@ A personal web app for the family to browse the home menu (菜谱), see dish det
 | POST | `/api/dishes/:id/images` | photo upload (multipart) |
 | GET | `/api/categories` | category list (ordered) |
 | GET | `/api/cart` | chosen dishes with dish info |
-| POST | `/api/cart/items` | choose a dish (idempotent — one row per dish) |
-| DELETE | `/api/cart/items/:id` | remove a dish from the selection |
+| PUT | `/api/cart` | replace the selection (`{dishIds}`) — one batch sync from the client |
+| POST | `/api/cart/items` | choose a dish (idempotent — one row per dish; legacy per-tap helper) |
+| DELETE | `/api/cart/items/:id` | remove a dish from the selection (legacy per-tap helper) |
 | POST | `/api/cart/confirm` | record stats, clear cart |
 | GET | `/api/stats` | dish popularity (order counts) |
 | GET | `/api/backup` | zip download of `data/` |
@@ -222,72 +223,57 @@ The family can manage the menu from the UI — no touching the database directly
 - [ ] Oversized or wrong-type uploads are rejected with a clear message.
 - [ ] A new category typed into the form appears as a homepage section.
 
-### TASK-006 — Choose dishes from homepage and detail page
+### TASK-006 — Choose dishes from the homepage with batch sync
 
 **Goal**
 
-Anyone can choose dishes for the shared family selection from either page. A dish is either chosen or not — there are no quantities.
+Anyone can choose dishes for the shared family selection from the homepage. A dish is either chosen or not — there are no quantities.
 
 **What to do**
 
-- Server: `POST /api/cart/items` (`{dishId}`; idempotent — one row per dish), `GET /api/cart` (chosen dishes joined with dish info).
-- Client: a choose button ("选这道菜") on each homepage card and on the detail page; visual feedback on tap (e.g. button briefly shows "已选 ✓"); a small badge in the nav showing how many dishes are chosen.
+- Server: `GET /api/cart` (chosen dishes joined with dish info) and `PUT /api/cart` (`{dishIds}`) which replaces the selection in one transaction. (Per-tap `POST`/`DELETE /api/cart/items` also exist as legacy helpers but the client does not use them.)
+- Client: tapping a dish card toggles the dish in the local selection, with visual feedback (green border + ✓ badge on chosen cards). A "详情" link on each card opens the dish page. The dish page itself is pure information — no choose button. A 🛒 icon in the nav shows the current count plus an "unsaved" dot when there are local changes; tapping it sends the whole selection to the server in one request.
 
 **How to implement**
 
-- Selection state is server-side (Decision Point 3); pages just refetch on mount. A tiny shared helper (`api.chooseDish`) avoids duplicating the logic.
-- Feedback must not rely on `:hover` (touch) — use a short state toggle.
+- Selection state lives in `App` (local, not per-tap synced); tapping 🛒 calls `api.syncCart(selectedIds)`. On mount the server's selection is loaded as the starting point.
+- Feedback must not rely on `:hover` (touch) — use short state toggles. The "详情" link stops event propagation so it does not trigger the card toggle.
 
 **Acceptance criteria**
 
-- [ ] Choosing the same dish twice results in one selection row (visible via the API / a later page).
-- [ ] Two browser windows see the same selection.
-- [ ] Both entry points work on phone and desktop.
+- [ ] Tapping a card adds the dish; tapping it again removes it; the 🛒 count follows.
+- [ ] The unsaved dot appears after a change and disappears after tapping 🛒; `GET /api/cart` then matches the local selection.
+- [ ] The 详情 link opens the detail page without toggling the dish.
+- [ ] Works on phone and desktop.
 
-### TASK-007 — Selection page with remove and confirm
+### TASK-007 — Cart summary page: date/time plan and confirm
 
 **Goal**
 
-The selection page shows the chosen dishes with remove, and a confirm action that records stats (Decision Point 4) and clears the selection.
-
-**Depends on**
-
-- TASK-006
+Tapping the 🛒 icon opens a summary page of the chosen dishes, where the family picks a date and time (when to eat — a meal plan) and confirms; confirming records stats (Decision Point 4) and clears the selection.
 
 **What to do**
 
-- Server: `DELETE /api/cart/items/:id`, `POST /api/cart/confirm` — in a transaction, increment `order_stats` per chosen dish, then clear the selection.
-- Client: selection page (`/cart`) — rows with thumbnail, name, remove; a 确认 button; empty-selection state.
+- Server: `POST /api/cart/confirm` — in a transaction, increment `order_stats` per chosen dish, then clear the selection. (`DELETE /api/cart/items/:dishId` already arrived in TASK-006 for the card toggle.)
+- Client: cart summary page (`/cart`) — rows with thumbnail, name, remove; date/time pickers; a 确认 button; empty-selection state.
 
 **How to implement**
 
 - `confirm` is one atomic DB transaction: stats and selection change together or not at all.
-- Navigation: 菜单 / 已选 (with badge) / 统计.
+- Navigation: 菜单 / 🛒 已选 (count badge; tapping it syncs then opens `/cart`) / 统计.
 
 **Acceptance criteria**
 
-- [ ] The selection persists across reloads.
-- [ ] Removing an item updates the badge.
+- [ ] Synced selections persist across reloads (loaded from the server on mount).
+- [ ] Tapping 🛒 syncs, then opens `/cart`.
 - [ ] Confirm increments each chosen dish's stats by exactly 1 and empties the selection.
 - [ ] Empty selection shows a friendly hint linking back to the menu.
-
-**Verification**
-
-Choose some dishes, reload, remove one, confirm, then check `GET /api/stats` reflects the counts and the selection is empty.
-
-**Learn**
-
-- Database transactions and why confirm must be atomic.
 
 ### TASK-008 — Statistics view
 
 **Goal**
 
 A popularity page: dishes ranked by order count, showing how often the family cooks each one.
-
-**Depends on**
-
-- TASK-007
 
 **What to do**
 
@@ -304,23 +290,11 @@ A popularity page: dishes ranked by order count, showing how often the family co
 - [ ] Counts and ordering survive reloads.
 - [ ] Renders reasonably on a phone.
 
-**Verification**
-
-Confirm a selection containing dish A and dish B; verify the ranking order and counts.
-
-**Learn**
-
-- SQL joins and aggregation vs doing it in JS.
-
 ### TASK-009 — Backup API
 
 **Goal**
 
 One-click backup: download the entire app's data (database + photos) as a zip, for relocation or safekeeping.
-
-**Depends on**
-
-- TASK-005 (uploads directory must exist and be standardized)
 
 **What to do**
 
@@ -337,24 +311,11 @@ One-click backup: download the entire app's data (database + photos) as a zip, f
 - [ ] Downloading `/api/backup` yields a zip containing the db and all uploaded photos.
 - [ ] Unzipping it into a fresh checkout and starting the server shows identical data (test this once).
 
-**Verification**
-
-Take a backup, move the zip to a temp folder, unzip, point a second server instance at it, compare homepage + stats.
-
-**Learn**
-
-- Why a file-based DB makes backup/relocation almost free — the whole "database" is one file.
-- Streaming responses for large payloads.
-
 ### TASK-010 — Responsive and reliability pass
 
 **Goal**
 
 Every page honestly satisfies AGENTS.md rule 4 (phone / tablet / desktop) and fails visibly instead of silently.
-
-**Depends on**
-
-- TASK-003 through TASK-008
 
 **What to do**
 
@@ -376,23 +337,11 @@ Every page honestly satisfies AGENTS.md rule 4 (phone / tablet / desktop) and fa
 - [ ] Every fetch has loading/error/empty handling; a stopped server never yields a blank page.
 - [ ] `npm run lint` and `npm run format` still pass.
 
-**Verification**
-
-Manual walkthrough per page at three widths, plus a run with the API down.
-
-**Learn**
-
-- Mobile-first thinking: reorganizing layouts, not just shrinking them.
-
 ### TASK-011 — Production build and deployment
 
 **Goal**
 
 The app runs as one server outside development: Express serves the built client, the API, and the photos.
-
-**Depends on**
-
-- TASK-009, TASK-010
 
 **What to do**
 
@@ -410,14 +359,6 @@ The app runs as one server outside development: Express serves the built client,
 - [ ] After build + start, the app is fully usable at the server's address from a phone on the same network.
 - [ ] Deep links (e.g. `/dish/3`) work on direct load (no 404).
 - [ ] The backup endpoint works in the production build.
-
-**Verification**
-
-Run the production command locally, open it from another device on the LAN, exercise home → detail → cart → confirm → stats → backup.
-
-**Learn**
-
-- Difference between dev servers and a production static build; single-process deployment.
 
 ---
 
