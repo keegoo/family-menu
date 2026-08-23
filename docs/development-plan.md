@@ -2,13 +2,13 @@
 
 ## Goal
 
-A personal web app for the family to browse the home menu (菜谱), see dish details, and pick dishes into a shared cart (e.g. what to cook this week). Popularity statistics show how often each dish was chosen. A backup endpoint makes the whole app relocatable as a downloadable zip.
+A personal web app for the family to browse the home menu (菜谱), see dish details, and choose dishes for a shared selection (e.g. what to cook this week). Popularity statistics show how often each dish was chosen. A backup endpoint makes the whole app relocatable as a downloadable zip.
 
 **MVP**
 
 - Homepage: dishes listed in sections by category (炒菜、炖菜、主食 etc.)
-- Dish detail page: large pictures, 食材, 佐料, steps
-- Cart page: shared family cart; add from homepage and detail page; quantities; confirm
+- Dish detail page: large pictures, 食材, 佐料, 做法
+- Selection page: shared family selection; choose from homepage and detail page; remove; confirm
 - Stats: popularity by order count
 - Dish management: add / edit / delete dishes with photo upload
 - Backup API: download a zip of the database + photos
@@ -27,7 +27,7 @@ A personal web app for the family to browse the home menu (菜谱), see dish det
 
 - One shared family cart, no user accounts — everyone at home uses the same cart.
 - "Order" = confirming the cart; stats count confirmations (see Decision Point 4).
-- Dishes may include an optional 做法 (steps) text field.
+- The 做法 is optional free text stored in the `dishes.description` field — there is no separate steps field/table.
 - Seed data provides sample dishes; real photos are added by the family after MVP.
 - Code and commits in English, UI text in Chinese.
 
@@ -47,7 +47,7 @@ A personal web app for the family to browse the home menu (菜谱), see dish det
 | `dish_images` | id, dish_id, path, sort (first = cover) |
 | `ingredients` | id, dish_id, name, amount, sort |
 | `seasonings` | id, dish_id, name, amount, sort |
-| `cart_items` | id, dish_id, quantity, created_at |
+| `cart_items` | id, dish_id (unique), created_at — one row per chosen dish, no quantities |
 | `order_stats` | dish_id (PK), count, last_ordered_at |
 
 **API sketch**
@@ -59,9 +59,9 @@ A personal web app for the family to browse the home menu (菜谱), see dish det
 | POST/PUT/DELETE | `/api/dishes[/:id]` | create / update / delete |
 | POST | `/api/dishes/:id/images` | photo upload (multipart) |
 | GET | `/api/categories` | category list (ordered) |
-| GET | `/api/cart` | cart items with dish info |
-| POST | `/api/cart/items` | add dish to cart (+1 if present) |
-| PATCH/DELETE | `/api/cart/items/:id` | change quantity / remove |
+| GET | `/api/cart` | chosen dishes with dish info |
+| POST | `/api/cart/items` | choose a dish (idempotent — one row per dish) |
+| DELETE | `/api/cart/items/:id` | remove a dish from the selection |
 | POST | `/api/cart/confirm` | record stats, clear cart |
 | GET | `/api/stats` | dish popularity (order counts) |
 | GET | `/api/backup` | zip download of `data/` |
@@ -179,7 +179,7 @@ The homepage renders dishes fetched from the database through the API, grouped i
 
 **Goal**
 
-`/dish/:id` shows everything about a dish: image gallery, name, category, 食材, 佐料, and 做法.
+`/dish/:id` shows everything about a dish: image gallery, name, category, 食材, 佐料, and 做法 (the `description` field).
 
 **What to do**
 
@@ -204,10 +204,6 @@ The homepage renders dishes fetched from the database through the API, grouped i
 
 The family can manage the menu from the UI — no touching the database directly.
 
-**Depends on**
-
-- TASK-004
-
 **What to do**
 
 - Server: `POST /api/dishes`, `PUT /api/dishes/:id`, `DELETE /api/dishes/:id`; `POST /api/dishes/:id/images` (multipart via multer → `data/uploads/`, served at `/uploads`); category creation inline (an unknown category name in a dish create upserts a new category).
@@ -226,54 +222,33 @@ The family can manage the menu from the UI — no touching the database directly
 - [ ] Oversized or wrong-type uploads are rejected with a clear message.
 - [ ] A new category typed into the form appears as a homepage section.
 
-**Verification**
-
-Create → view → edit → delete a test dish end-to-end; try uploading a 15 MB file and a `.txt`.
-
-**Learn**
-
-- Multipart/form-data vs JSON bodies; static file serving.
-- Controlled forms and dynamic form rows in React.
-
-### TASK-006 — Add to cart from homepage and detail page
+### TASK-006 — Choose dishes from homepage and detail page
 
 **Goal**
 
-Anyone can add dishes to the shared family cart from either page.
-
-**Depends on**
-
-- TASK-004
+Anyone can choose dishes for the shared family selection from either page. A dish is either chosen or not — there are no quantities.
 
 **What to do**
 
-- Server: `POST /api/cart/items` (`{dishId}`; increments quantity if already present), `GET /api/cart` (items joined with dish info).
-- Client: an add button ("加入购物车") on each homepage card and on the detail page; visual feedback on tap (e.g. button briefly shows "已加入"); a small cart-count badge in the nav.
+- Server: `POST /api/cart/items` (`{dishId}`; idempotent — one row per dish), `GET /api/cart` (chosen dishes joined with dish info).
+- Client: a choose button ("选这道菜") on each homepage card and on the detail page; visual feedback on tap (e.g. button briefly shows "已选 ✓"); a small badge in the nav showing how many dishes are chosen.
 
 **How to implement**
 
-- Cart state is server-side (Decision Point 3); pages just refetch on mount. A tiny shared helper (`api.addToCart`) avoids duplicating the logic.
+- Selection state is server-side (Decision Point 3); pages just refetch on mount. A tiny shared helper (`api.chooseDish`) avoids duplicating the logic.
 - Feedback must not rely on `:hover` (touch) — use a short state toggle.
 
 **Acceptance criteria**
 
-- [ ] Adding the same dish twice results in quantity 2 (visible via the API / a later page).
-- [ ] Two browser windows see the same cart.
+- [ ] Choosing the same dish twice results in one selection row (visible via the API / a later page).
+- [ ] Two browser windows see the same selection.
 - [ ] Both entry points work on phone and desktop.
 
-**Verification**
-
-Add from homepage, then from detail; check `GET /api/cart`; open a second browser (or incognito window) and confirm the cart is shared.
-
-**Learn**
-
-- Shared state on the server vs local state — when each is right.
-
-### TASK-007 — Cart page with quantity controls and confirm
+### TASK-007 — Selection page with remove and confirm
 
 **Goal**
 
-The cart page shows chosen items with quantity controls, remove, and a confirm action that records stats (Decision Point 4) and clears the cart.
+The selection page shows the chosen dishes with remove, and a confirm action that records stats (Decision Point 4) and clears the selection.
 
 **Depends on**
 
@@ -281,24 +256,24 @@ The cart page shows chosen items with quantity controls, remove, and a confirm a
 
 **What to do**
 
-- Server: `PATCH /api/cart/items/:id` (quantity), `DELETE /api/cart/items/:id`, `POST /api/cart/confirm` — in a transaction, increment `order_stats` per cart item, then clear the cart.
-- Client: cart page (`/cart`) — rows with thumbnail, name, − / + quantity, remove; a total; a 确认 button; empty-cart state.
+- Server: `DELETE /api/cart/items/:id`, `POST /api/cart/confirm` — in a transaction, increment `order_stats` per chosen dish, then clear the selection.
+- Client: selection page (`/cart`) — rows with thumbnail, name, remove; a 确认 button; empty-selection state.
 
 **How to implement**
 
-- `confirm` is one atomic DB transaction: stats and cart change together or not at all.
-- Navigation: 菜单 / 购物车 (with badge) / 统计.
+- `confirm` is one atomic DB transaction: stats and selection change together or not at all.
+- Navigation: 菜单 / 已选 (with badge) / 统计.
 
 **Acceptance criteria**
 
-- [ ] Quantity changes persist across reloads.
+- [ ] The selection persists across reloads.
 - [ ] Removing an item updates the badge.
-- [ ] Confirm increments each dish's stats exactly once per quantity and empties the cart.
-- [ ] Empty cart shows a friendly hint linking back to the menu.
+- [ ] Confirm increments each chosen dish's stats by exactly 1 and empties the selection.
+- [ ] Empty selection shows a friendly hint linking back to the menu.
 
 **Verification**
 
-Fill the cart, reload, adjust quantities, confirm, then check `GET /api/stats` reflects the counts and the cart is empty.
+Choose some dishes, reload, remove one, confirm, then check `GET /api/stats` reflects the counts and the selection is empty.
 
 **Learn**
 
@@ -331,7 +306,7 @@ A popularity page: dishes ranked by order count, showing how often the family co
 
 **Verification**
 
-Confirm a cart containing dish A twice and dish B once; verify the ranking order and counts.
+Confirm a selection containing dish A and dish B; verify the ranking order and counts.
 
 **Learn**
 
@@ -452,5 +427,5 @@ Run the production command locally, open it from another device on the LAN, exer
 2. **今天吃什么** — a random dish picker, optionally filtered by category. The eternal family question, solved.
 3. **Dish ratings (⭐)** — a "family favorites" filter and stats weighted by rating.
 4. **Weekly meal plan** — pick 7 dishes onto a calendar; cart confirms feed it.
-5. **Structured 做法 steps** — turn the steps text into a numbered list with a big-text "cooking mode".
+5. **Structured 做法 steps** — split the 做法 text (currently free text in `description`) into a numbered list with a big-text "cooking mode".
 6. **中/EN language toggle** — if the family is bilingual.
