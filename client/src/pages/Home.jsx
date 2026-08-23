@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { getCategories, getDishes } from '../api'
-import ChooseDishButton from '../components/ChooseDishButton'
 import './Home.css'
 
 const STYLES = {
@@ -9,14 +8,19 @@ const STYLES = {
   sectionTitle: { fontSize: 18, fontWeight: 600, margin: '0 0 12px' },
   grid: { display: 'grid', gap: 16 },
   card: {
+    position: 'relative',
     display: 'flex',
     flexDirection: 'column',
+    padding: 0,
     border: '1px solid #e0e0e0',
     borderRadius: 8,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    background: '#fff',
+    color: 'inherit',
+    font: 'inherit',
+    textAlign: 'left'
   },
-  cardLink: { display: 'block', textDecoration: 'none', color: 'inherit' },
-  cardFooter: { padding: '0 12px 12px', marginTop: 'auto' },
+  cardSelected: { borderColor: '#33691e' },
   cover: { width: '100%', height: 160, objectFit: 'cover', display: 'block' },
   placeholder: {
     height: 160,
@@ -27,12 +31,27 @@ const STYLES = {
     background: '#f0f0f0'
   },
   cardName: { padding: '8px 12px', fontSize: 15, fontWeight: 500 },
+  checkBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    background: '#33691e',
+    color: '#fff',
+    fontSize: 16,
+    lineHeight: '28px',
+    textAlign: 'center'
+  },
+  cardFooter: { padding: '0 12px 12px', marginTop: 'auto' },
+  detailLink: { color: '#33691e', fontSize: 14, textDecoration: 'none' },
   loading: { color: '#666', padding: 16 },
   error: { color: '#c62828', padding: 16 },
   errorDetail: { fontSize: 12, color: '#999' }
 }
 
-export default function Home({ onAdded }) {
+export default function Home({ selectedIds, onToggle }) {
   const [state, setState] = useState({
     status: 'loading',
     categories: [],
@@ -76,20 +95,33 @@ export default function Home({ onAdded }) {
         <section key={section.id} style={STYLES.section}>
           <h2 style={STYLES.sectionTitle}>{section.name}</h2>
           <div className="dish-grid" style={STYLES.grid}>
-            {section.dishes.map(dish => (
-              <div key={dish.id} style={STYLES.card}>
-                <Link to={`/dish/${dish.id}`} style={STYLES.cardLink}>
+            {section.dishes.map(dish => {
+              const isSelected = selectedIds.includes(dish.id)
+              return (
+                <button
+                  key={dish.id}
+                  type="button"
+                  className="dish-card"
+                  aria-pressed={isSelected}
+                  onClick={() => onToggle(dish)}
+                  style={isSelected ? { ...STYLES.card, ...STYLES.cardSelected } : STYLES.card}
+                >
                   {dish.cover
                     ? <img src={dish.cover} alt={dish.name} style={STYLES.cover} />
                     : <div style={STYLES.placeholder} aria-hidden="true">🍲</div>
                   }
+                  {isSelected && <span style={STYLES.checkBadge} aria-hidden="true">✓</span>}
                   <p style={STYLES.cardName}>{dish.name}</p>
-                </Link>
-                <div style={STYLES.cardFooter}>
-                  <ChooseDishButton dishId={dish.id} onAdded={onAdded} />
-                </div>
-              </div>
-            ))}
+                  <div style={STYLES.cardFooter}>
+                    <Link
+                      to={`/dish/${dish.id}`}
+                      style={STYLES.detailLink}
+                      onClick={event => event.stopPropagation()}
+                    >详情</Link>
+                  </div>
+                </button>
+              )
+            })}
           </div>
         </section>
       ))}

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { getDish } from '../api.js'
 import './Dish.css'
-import ChooseDishButton from '../components/ChooseDishButton'
 
 const STYLES = {
   content: { maxWidth: 640, margin: '0 auto'},
@@ -21,13 +20,6 @@ const STYLES = {
     borderRadius: 4,
     padding: '2px 8px',
     fontSize: 13,
-    margin: '0'
-  },
-  metaRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
     margin: '0 0 16px'
   },
   placeholder: {
@@ -57,7 +49,7 @@ const STYLES = {
   errorDetail: { fontSize: 12, color: '#999'}
 }
 
-export default function Dish({ onAdded }) {
+export default function Dish() {
   const { id } = useParams()
   const [state, setState] = useState({
     status: 'loading',
@@ -102,10 +94,7 @@ export default function Dish({ onAdded }) {
     <div style={STYLES.content}>
       <Link to="/" style={STYLES.back}>返回菜单</Link>
       <h1 style={STYLES.name}>{dish.name}</h1>
-      <div style={STYLES.metaRow}>
-        <span style={STYLES.category}>{dish.category}</span>
-        <ChooseDishButton dishId={dish.id} onAdded={onAdded} style={{ width: 'auto' }} />
-      </div>
+      <span style={STYLES.category}>{dish.category}</span>
 
       {
         dish.images.length > 0

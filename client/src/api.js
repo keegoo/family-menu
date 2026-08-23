@@ -12,8 +12,8 @@ export const getDishes = () => request('/api/dishes')
 export const getCategories = () => request('/api/categories')
 export const getDish = (id) => request(`/api/dishes/${id}`)
 export const getCart = () => request('/api/cart')
-export const chooseDish = (dishId) => request('/api/cart/items', {
-  method: 'POST',
+export const syncCart = (dishIds) => request('/api/cart', {
+  method: 'PUT',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ dishId })
+  body: JSON.stringify({ dishIds })
 })
