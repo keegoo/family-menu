@@ -35,3 +35,9 @@ CREATE TABLE IF NOT EXISTS seasonings (
     amount TEXT,
     sort INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS cart_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    dish_id INTEGER NOT NULL UNIQUE REFERENCES dishes(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
