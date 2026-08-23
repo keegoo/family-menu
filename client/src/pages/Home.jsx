@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { getCategories, getDishes } from '../api'
+import ChooseDishButton from '../components/ChooseDishButton'
 import './Home.css'
 
 const STYLES = {
@@ -8,13 +9,14 @@ const STYLES = {
   sectionTitle: { fontSize: 18, fontWeight: 600, margin: '0 0 12px' },
   grid: { display: 'grid', gap: 16 },
   card: {
-    display: 'block',
+    display: 'flex',
+    flexDirection: 'column',
     border: '1px solid #e0e0e0',
     borderRadius: 8,
-    overflow: 'hidden',
-    textDecoration: 'none',
-    color: 'inherit'
+    overflow: 'hidden'
   },
+  cardLink: { display: 'block', textDecoration: 'none', color: 'inherit' },
+  cardFooter: { padding: '0 12px 12px', marginTop: 'auto' },
   cover: { width: '100%', height: 160, objectFit: 'cover', display: 'block' },
   placeholder: {
     height: 160,
@@ -30,7 +32,7 @@ const STYLES = {
   errorDetail: { fontSize: 12, color: '#999' }
 }
 
-export default function Home() {
+export default function Home({ onAdded }) {
   const [state, setState] = useState({
     status: 'loading',
     categories: [],
@@ -75,13 +77,18 @@ export default function Home() {
           <h2 style={STYLES.sectionTitle}>{section.name}</h2>
           <div className="dish-grid" style={STYLES.grid}>
             {section.dishes.map(dish => (
-              <Link key={dish.id} to={`/dish/${dish.id}`} style={STYLES.card}>
-                {dish.cover
-                  ? <img src={dish.cover} alt={dish.name} styles={STYLES.cover} />
-                  : <div style={STYLES.placeholder} aria-hidden="true">🍲</div>
-                }
-                <p style={STYLES.cardName}>{dish.name}</p>
-              </Link>
+              <div key={dish.id} style={STYLES.card}>
+                <Link to={`/dish/${dish.id}`} style={STYLES.cardLink}>
+                  {dish.cover
+                    ? <img src={dish.cover} alt={dish.name} style={STYLES.cover} />
+                    : <div style={STYLES.placeholder} aria-hidden="true">🍲</div>
+                  }
+                  <p style={STYLES.cardName}>{dish.name}</p>
+                </Link>
+                <div style={STYLES.cardFooter}>
+                  <ChooseDishButton dishId={dish.id} onAdded={onAdded} />
+                </div>
+              </div>
             ))}
           </div>
         </section>

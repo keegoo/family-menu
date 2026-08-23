@@ -50,6 +50,33 @@ const dishSeasoningsQuery = db.prepare(
 
 const categoryListQuery = db.prepare('SELECT id, name FROM categories ORDER BY sort, id')
 
+const cartListQuery = db.prepare(`
+  SELECT
+    cart_items.id,
+    cart_items.dish_id,
+    dishes.name,
+    categories.name AS category,
+    (
+      SELECT path FROM dish_images
+      WHERE dish_id = dishes.id
+      ORDER BY dish_images.sort
+      LIMIT 1
+    ) AS cover
+  FROM cart_items
+  JOIN dishes ON cart_items.dish_id = dishes.id
+  JOIN categories ON dishes.category_id = categories.id
+  ORDER BY cart_items.created_at, cart_items.id
+`)
+
+const dishExistsQuery = db.prepare('SELECT id FROM dishes WHERE id = ?')
+
+const addCartItemQuery = db.prepare(`
+  INSERT INTO cart_items (dish_id) VALUES (?)
+  ON CONFLICT(dish_id) DO NOTHING
+`)
+
+const cartItemQuery = db.prepare('SELECT id, dish_id FROM cart_items WHERE dish_id = ?')
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() })
 })
@@ -75,6 +102,23 @@ app.get('/api/dishes/:id', (req, res) => {
 
 app.get('/api/categories', (req, res) => {
   res.json(categoryListQuery.all())
+})
+
+app.get('/api/cart', (req, res) => {
+  const items = cartListQuery.all()
+  res.json({ items, count: items.length })
+})
+
+app.post('/api/cart/items', (req, res) => {
+  const dishId = Number(req.body?.dishId)
+  if (!Number.isInteger(dishId) || dishId <= 0) {
+    return res.status(400).json({ error: 'dishId is required' })
+  }
+  if (!dishExistsQuery.get(dishId)) {
+    return res.status(404).json({ error: 'Dish not found' })
+  }
+  addCartItemQuery.run(dishId)
+  res.json(cartItemQuery.get(dishId))
 })
 
 app.use((err, req, res, next) => {
