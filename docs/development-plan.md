@@ -43,7 +43,7 @@ A personal web app for the family to browse the home menu (菜谱), see dish det
 | Table | Fields |
 |---|---|
 | `categories` | id, name, sort |
-| `dishes` | id, name, category_id, description, steps, created_at, updated_at |
+| `dishes` | id, name, category_id, description, created_at, updated_at |
 | `dish_images` | id, dish_id, path, sort (first = cover) |
 | `ingredients` | id, dish_id, name, amount, sort |
 | `seasonings` | id, dish_id, name, amount, sort |
@@ -110,10 +110,6 @@ A personal web app for the family to browse the home menu (菜谱), see dish det
 
 A runnable dev environment: Vite + React client, Express server, one command to start both, lint/format enforcing the AGENTS.md rules.
 
-**Depends on**
-
-- None.
-
 **What to do**
 
 - Create `package.json` (scripts: `dev`, `build`, `lint`, `format`), `client/` (Vite React), `server/` (Express with `GET /api/health`).
@@ -132,24 +128,11 @@ A runnable dev environment: Vite + React client, Express server, one command to 
 - [ ] `GET /api/health` (directly and through the proxy) returns ok.
 - [ ] `npm run lint` and `npm run format:check` pass; adding a semicolon to any `.jsx` file fails the check.
 
-**Verification**
-
-Run `npm run dev`, open the page, call the health endpoint, then temporarily add a semicolon and confirm lint flags it.
-
-**Learn**
-
-- Why dev uses two servers (Vite hot reload + Express API) and what the proxy does.
-- How ESLint + Prettier enforce style mechanically instead of by memory.
-
 ### TASK-002 — SQLite data layer and seed data
 
 **Goal**
 
 The database schema exists, is initialized on startup, and can be seeded with categories and sample dishes so the UI has data to show.
-
-**Depends on**
-
-- TASK-001
 
 **What to do**
 
@@ -168,24 +151,11 @@ The database schema exists, is initialized on startup, and can be seeded with ca
 - [ ] All tables exist with foreign keys (`dishes.category_id`, `ingredients.dish_id`, etc.).
 - [ ] Seed contains ≥3 categories and ≥4 dishes with ingredients.
 
-**Verification**
-
-Inspect with `sqlite3 data/family-menu.db '.tables'` (or a small node one-liner), spot-check a seeded dish's rows.
-
-**Learn**
-
-- Relational schema design: why 食材 live in their own table instead of one big column.
-- Why a file DB fits this app: single file, zero servers, backup = copy.
-
 ### TASK-003 — Homepage: first end-to-end slice
 
 **Goal**
 
 The homepage renders dishes fetched from the database through the API, grouped into category sections — proving the full architecture (DB → API → UI) works.
-
-**Depends on**
-
-- TASK-002
 
 **What to do**
 
@@ -205,24 +175,11 @@ The homepage renders dishes fetched from the database through the API, grouped i
 - [ ] Grid is 1 column on a phone width and multi-column on desktop.
 - [ ] API failure shows a visible error message.
 
-**Verification**
-
-`npm run dev`; check sections and cards; use devtools phone emulation for the column change; stop the server and reload to see the error state.
-
-**Learn**
-
-- The full end-to-end flow and why a thin slice first beats building all layers separately.
-- Client-side grouping of flat list data.
-
 ### TASK-004 — Dish detail page
 
 **Goal**
 
 `/dish/:id` shows everything about a dish: image gallery, name, category, 食材, 佐料, and 做法.
-
-**Depends on**
-
-- TASK-003
 
 **What to do**
 
@@ -240,14 +197,6 @@ The homepage renders dishes fetched from the database through the API, grouped i
 - [ ] Multiple images display; image-less dishes show a placeholder.
 - [ ] Unknown id shows a friendly not-found; broken API shows an error state.
 - [ ] Readable at phone width.
-
-**Verification**
-
-Click through several seeded dishes, test an invented id like `/dish/999`, and stop the server mid-navigation.
-
-**Learn**
-
-- REST detail routes and status codes (200 vs 404 vs 500).
 
 ### TASK-005 — Dish management: add / edit / delete with photos
 
