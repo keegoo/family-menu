@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router'
 import Home from './pages/Home'
 import Dish from './pages/Dish'
-import { getCart } from './api.js'
+import { getCart, syncCart } from './api'
+import './App.css'
 
 const STYLES = {
   header: {
@@ -21,10 +22,17 @@ const STYLES = {
     color: '#333',
     textDecoration: 'none'
   },
-  main: {
-    maxWidth: '960px',
-    margin: '0 auto',
-    padding: '16px'
+  cartButton: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '8px 12px',
+    border: 'none',
+    borderRadius: 20,
+    background: 'transparent',
+    fontSize: 18,
+    cursor: 'pointer'
   },
   badge: {
     minWidth: 20,
@@ -35,18 +43,64 @@ const STYLES = {
     fontSize: 12,
     lineHeight: '20px',
     textAlign: 'center'
+  },
+  unsavedDot: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    background: '#e65100'
+  },
+  main: {
+    maxWidth: '960px',
+    margin: '0 auto',
+    padding: '16px'
   }
 }
 
 export default function App() {
-  const [cartCount, setCartCount] = useState(0)
+  const [selectedIds, setSelectedIds] = useState([])
+  const [dirty, setDirty] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [toast, setToast] = useState(null)
+  const toastTimer = useRef(null)
 
-  const refreshCart = useCallback(
-    () => getCart().then(cart => setCartCount(cart.count)).catch(() => { }),
-    []
-  )
+  useEffect(() => {
+    getCart()
+      .then(cart => setSelectedIds(cart.items.map(item => item.dish_id)))
+      .catch(() => {})
+  }, [])
 
-  useEffect(() => { refreshCart() }, [refreshCart])
+  useEffect(() => () => clearTimeout(toastTimer.current), [])
+
+  const showToast = useCallback((type, text) => {
+    setToast({ type, text })
+    clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setToast(null), 1800)
+  }, [])
+
+  const toggleDish = useCallback((dish) => {
+    setSelectedIds(ids => ids.includes(dish.id)
+      ? ids.filter(id => id !== dish.id)
+      : [...ids, dish.id])
+    setDirty(true)
+  }, [])
+
+  async function handleSync() {
+    if (syncing) return
+    setSyncing(true)
+    try {
+      await syncCart(selectedIds)
+      setDirty(false)
+      showToast('ok', `已同步，共 ${selectedIds.length} 道菜`)
+    } catch {
+      showToast('error', '同步失败，请再试一次')
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   return (
     <BrowserRouter>
@@ -54,17 +108,29 @@ export default function App() {
         <h1 style={STYLES.title}>
           <Link to="/" style={STYLES.link}>Family Menu</Link>
         </h1>
+        <button
+          type="button"
+          style={STYLES.cartButton}
+          disabled={syncing}
+          onClick={handleSync}
+          aria-label={`已选 ${selectedIds.length} 道菜${dirty ? '，尚未同步' : ''}`}
+        >
+          <span aria-hidden="true">🛒</span>
+          <span style={STYLES.badge}>{selectedIds.length}</span>
+          {dirty && <span style={STYLES.unsavedDot} aria-hidden="true" />}
+        </button>
       </header>
-      <span style={STYLES.cart} aria-label={`购物车 ${cartCount} 件`}>
-        <span aria-hidden="true">🛒</span>
-        <span style={STYLES.badge}>{cartCount}</span>
-      </span>
       <main style={STYLES.main}>
         <Routes>
-          <Route path="/" element={<Home onAdded={refreshCart} />} />
-          <Route path="/dish/:id" element={<Dish onAdded={refreshCart} />} />
+          <Route path="/" element={<Home selectedIds={selectedIds} onToggle={toggleDish} />} />
+          <Route path="/dish/:id" element={<Dish />} />
         </Routes>
       </main>
+      {toast && (
+        <div className="toast" role="status" style={toast.type === 'error' ? { background: '#c62828' } : null}>
+          {toast.text}
+        </div>
+      )}
     </BrowserRouter>
   )
 }

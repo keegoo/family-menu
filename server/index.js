@@ -77,6 +77,12 @@ const addCartItemQuery = db.prepare(`
 
 const cartItemQuery = db.prepare('SELECT id, dish_id FROM cart_items WHERE dish_id = ?')
 
+const deleteCartItemQuery = db.prepare('DELETE FROM cart_items WHERE dish_id = ?')
+
+const clearCartQuery = db.prepare('DELETE FROM cart_items')
+
+const insertCartItemQuery = db.prepare('INSERT INTO cart_items (dish_id) VALUES (?)')
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() })
 })
@@ -119,6 +125,31 @@ app.post('/api/cart/items', (req, res) => {
   }
   addCartItemQuery.run(dishId)
   res.json(cartItemQuery.get(dishId))
+})
+
+app.delete('/api/cart/items/:dishId', (req, res) => {
+  const dishId = Number(req.params.dishId)
+  if (!Number.isInteger(dishId) || dishId <= 0) {
+    return res.status(400).json({ error: 'dishId is required' })
+  }
+  if (!cartItemQuery.get(dishId)) {
+    return res.status(404).json({ error: 'Dish not in selection' })
+  }
+  deleteCartItemQuery.run(dishId)
+  res.json({ removed: dishId })
+})
+
+app.put('/api/cart', (req, res) => {
+  const dishIds = req.body?.dishIds
+  if (!Array.isArray(dishIds) || dishIds.some(id => !Number.isInteger(id) || id <= 0)) {
+    return res.status(400).json({ error: 'dishIds must be an array of dish ids' })
+  }
+  const replaceCart = db.transaction(ids => {
+    clearCartQuery.run()
+    for (const id of new Set(ids)) insertCartItemQuery.run(id)
+  })
+  replaceCart(dishIds)
+  res.json({ count: dishIds.length })
 })
 
 app.use((err, req, res, next) => {

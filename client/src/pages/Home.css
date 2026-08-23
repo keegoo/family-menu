@@ -13,3 +13,15 @@
         grid-template-columns: repeat(3, 1fr);
     }
 }
+
+.dish-card {
+    cursor: pointer;
+}
+
+.dish-card:hover:not(:disabled) {
+    border-color: #33691e;
+}
+
+.dish-card:active:not(:disabled) {
+    transform: scale(0.98);
+}
