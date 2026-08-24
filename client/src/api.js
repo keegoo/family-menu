@@ -17,3 +17,9 @@ export const syncCart = (dishIds) => request('/api/cart', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ dishIds })
 })
+export const removeCartItem = (dishId) => request(`/api/cart/items/${dishId}`, { method: 'DELETE' })
+export const confirmCart = (dateTime) => request('/api/cart/confirm', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ dateTime })
+})
