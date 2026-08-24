@@ -41,3 +41,9 @@ CREATE TABLE IF NOT EXISTS cart_items (
     dish_id INTEGER NOT NULL UNIQUE REFERENCES dishes(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
+
+CREATE TABLE IF NOT EXISTS order_stats (
+    dish_id INTEGER PRIMARY KEY REFERENCES dishes(id) ON DELETE CASCADE,
+    count INTEGER NOT NULL DEFAULT 0,
+    last_ordered_at TIMESTAMP
+);

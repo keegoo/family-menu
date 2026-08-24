@@ -81,6 +81,14 @@ const deleteCartItemQuery = db.prepare('DELETE FROM cart_items WHERE dish_id = ?
 
 const clearCartQuery = db.prepare('DELETE FROM cart_items')
 
+const upsertOrderStatQuery = db.prepare(`
+  INSERT INTO order_stats (dish_id, count, last_ordered_at) VALUES (?, 1, ?)
+  ON CONFLICT(dish_id)
+  DO UPDATE SET
+    count = count + 1,
+    last_ordered_at = excluded.last_ordered_at
+`)
+
 const insertCartItemQuery = db.prepare('INSERT INTO cart_items (dish_id) VALUES (?)')
 
 app.get('/api/health', (req, res) => {
@@ -150,6 +158,24 @@ app.put('/api/cart', (req, res) => {
   })
   replaceCart(dishIds)
   res.json({ count: dishIds.length })
+})
+
+app.post('/api/cart/confirm', (req, res) => {
+  const confirmedAt = (typeof req.body?.dateTime === 'string' && req.body.dateTime
+    ? req.body.dateTime
+    : new Date().toISOString())
+
+  const confirm = db.transaction(items => {
+    for (const item of items) upsertOrderStatQuery.run(item.dish_id, confirmedAt)
+    clearCartQuery.run()
+  })
+
+  const items = cartListQuery.all()
+  if (items.length === 0) {
+    return res.status(400).json({ error: 'Cart is empty' })
+  }
+  confirm(items)
+  res.json({ confirmed: items.map(item => item.dish_id), confirmedAt })
 })
 
 app.use((err, req, res, next) => {
