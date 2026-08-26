@@ -23,3 +23,4 @@ export const confirmCart = (dateTime) => request('/api/cart/confirm', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ dateTime })
 })
+export const getStats = () => request('/api/stats')

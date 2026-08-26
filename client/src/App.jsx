@@ -3,6 +3,7 @@ import { useNavigate, BrowserRouter, Routes, Route, Link } from 'react-router'
 import Home from './pages/Home'
 import Dish from './pages/Dish'
 import Cart from './pages/Cart'
+import Stats from './pages/Stats'
 import { getCart, syncCart } from './api'
 import './App.css'
 
@@ -147,7 +148,7 @@ function AppShell() {
               }}
             />
           }/>
-          <Route path="/stats" element={<p style={{ color: '#666', padding: 16 }}>统计页面</p>} />
+          <Route path="/stats" element={<Stats />} />
         </Routes>
       </main>
       {toast && (
