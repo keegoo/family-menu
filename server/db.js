@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import Database from 'better-sqlite3'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url)) // Get current directory
-const DATA_DIR = path.join(__dirname, '..', 'data')
+export const DATA_DIR = path.join(__dirname, '..', 'data')
 
 fs.mkdirSync(DATA_DIR, { recursive: true })
 

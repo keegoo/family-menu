@@ -1,5 +1,9 @@
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import express from 'express'
-import db from './db.js'
+import { ZipArchive } from 'archiver'
+import db, { DATA_DIR } from './db.js'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -201,6 +205,35 @@ app.get('/api/stats', (req, res) => {
     dishes: statsListQuery.all(),
     total_orders: totalOrdersQuery.get().total_orders
   })
+})
+
+app.get('/api/backup', async (req, res) => {
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, '')
+  const snapshot = path.join(os.tmpdir(), `family-menu-${stamp}-${process.pid}.db`)
+  const uploadsDir = path.join(DATA_DIR, 'uploads')
+
+  try {
+    await db.backup(snapshot)
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ error: 'Backup failed' })
+  }
+
+  res.setHeader('Content-Type', 'application/zip')
+  res.setHeader('Content-Disposition', `attachment; filename="family-menu-backup-${stamp}.zip"`)
+
+  const archive = new ZipArchive()
+  archive.on('warning', err => console.warn(err))
+  archive.on('error', err => {
+    console.error(err)
+    res.destroy(err)
+  })
+  res.on('close', () => fs.rm(snapshot, { force: true }, () => { }))
+
+  archive.pipe(res)
+  archive.file(snapshot, { name: 'family-menu.db' })
+  if (fs.existsSync(uploadsDir)) archive.directory(uploadsDir, 'uploads')
+  archive.finalize()
 })
 
 app.use((err, req, res, next) => {
