@@ -68,6 +68,24 @@ const cartListQuery = db.prepare(`
   ORDER BY cart_items.created_at, cart_items.id
 `)
 
+const statsListQuery = db.prepare(`
+  SELECT
+    dishes.id,
+    dishes.name,
+    COALESCE(order_stats.count, 0) AS order_count,
+    (
+      SELECT path FROM dish_images
+      WHERE dish_id = dishes.id
+      ORDER BY dish_images.sort
+      LIMIT 1
+    ) AS cover
+  FROM dishes
+  LEFT JOIN order_stats ON order_stats.dish_id = dishes.id
+  ORDER BY order_count DESC, dishes.name
+`)
+
+const totalOrdersQuery = db.prepare('SELECT COALESCE(SUM(count), 0) AS total_orders FROM order_stats')
+
 const dishExistsQuery = db.prepare('SELECT id FROM dishes WHERE id = ?')
 
 const addCartItemQuery = db.prepare(`
@@ -176,6 +194,13 @@ app.post('/api/cart/confirm', (req, res) => {
   }
   confirm(items)
   res.json({ confirmed: items.map(item => item.dish_id), confirmedAt })
+})
+
+app.get('/api/stats', (req, res) => {
+  res.json({
+    dishes: statsListQuery.all(),
+    total_orders: totalOrdersQuery.get().total_orders
+  })
 })
 
 app.use((err, req, res, next) => {
