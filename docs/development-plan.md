@@ -278,7 +278,7 @@ A popularity page: dishes ranked by order count, showing how often the family co
 **What to do**
 
 - Server: `GET /api/stats` → dishes with `order_count` (join `order_stats`), sorted descending, plus total orders.
-- Client: stats page (`/stats`) — ranked list with cover thumbnails, count badges; top-3 visually highlighted; dishes with zero orders listed at the bottom (or hidden behind a toggle — pick one).
+- Client: stats page (`/stats`) — ranked list with cover thumbnails, count badges; top-3 visually highlighted; dishes with zero orders listed at the bottom.
 
 **How to implement**
 
