@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Dish from './pages/Dish'
 import Cart from './pages/Cart'
 import Stats from './pages/Stats'
+import NotFound from './pages/NotFound'
 import { getCart, syncCart } from './api'
 import './App.css'
 
@@ -19,6 +20,15 @@ const STYLES = {
     fontSize: 20,
     fontWeight: 700,
     margin: '12px 0'
+  },
+  navLink: {
+    display: 'flex',
+    alignItems: 'center',
+    minHeight: 44,
+    padding: '0 12px',
+    color: '#333',
+    textDecoration: 'none',
+    fontSize: 15
   },
   link: {
     color: '#333',
@@ -78,19 +88,19 @@ function AppShell() {
   const toastTimer = useRef(null)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    getCart()
-      .then(cart => setSelectedIds(cart.items.map(item => item.dish_id)))
-      .catch(() => {})
-  }, [])
-
-  useEffect(() => () => clearTimeout(toastTimer.current), [])
-
   const showToast = useCallback((type, text) => {
     setToast({ type, text })
     clearTimeout(toastTimer.current)
     toastTimer.current = setTimeout(() => setToast(null), 1800)
   }, [])
+
+  useEffect(() => {
+    getCart()
+      .then(cart => setSelectedIds(cart.items.map(item => item.dish_id)))
+      .catch(() => showToast('error', '无法读取购物车，请确认服务器已启动'))
+  }, [showToast])
+
+  useEffect(() => () => clearTimeout(toastTimer.current), [])
 
   const toggleDish = useCallback((dish) => {
     setSelectedIds(ids => ids.includes(dish.id)
@@ -120,7 +130,7 @@ function AppShell() {
           <Link to="/" style={STYLES.link}>Family Menu</Link>
         </h1>
         <nav style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Link to="/stats" style={STYLES.link}>统计</Link>
+          <Link to="/stats" style={STYLES.navLink}>统计</Link>
           <button
             type="button"
             style={STYLES.cartButton}
@@ -149,6 +159,7 @@ function AppShell() {
             />
           }/>
           <Route path="/stats" element={<Stats />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       {toast && (
