@@ -10,12 +10,12 @@ A personal web app for the family to browse the home menu (菜谱), see dish det
 - Dish detail page: large pictures, 食材, 佐料, 做法
 - Selection page: shared family selection; choose from homepage and detail page; remove; confirm
 - Stats: popularity by order count
-- Dish management: add / edit / delete dishes with photo upload
 - Backup API: download a zip of the database + photos
 - Responsive: phone, tablet, desktop (per AGENTS.md)
 
 **Out of scope (later)**
 
+- Dish management UI (add / edit / delete with photo upload) — dishes come from `npm run seed` for now; adding them through an API is a Post-MVP idea.
 - Accounts / authentication, shopping-list aggregation, random dish picker, ratings, weekly meal plan, i18n, Docker/K8s, DB migration tooling.
 
 ## Open Questions
@@ -56,8 +56,6 @@ A personal web app for the family to browse the home menu (菜谱), see dish det
 |---|---|---|
 | GET | `/api/dishes` | dish list (with cover image + category) |
 | GET | `/api/dishes/:id` | full detail (images, 食材, 佐料) |
-| POST/PUT/DELETE | `/api/dishes[/:id]` | create / update / delete |
-| POST | `/api/dishes/:id/images` | photo upload (multipart) |
 | GET | `/api/categories` | category list (ordered) |
 | GET | `/api/cart` | chosen dishes with dish info |
 | PUT | `/api/cart` | replace the selection (`{dishIds}`) — one batch sync from the client |
@@ -199,30 +197,6 @@ The homepage renders dishes fetched from the database through the API, grouped i
 - [ ] Unknown id shows a friendly not-found; broken API shows an error state.
 - [ ] Readable at phone width.
 
-### TASK-005 — Dish management: add / edit / delete with photos
-
-**Goal**
-
-The family can manage the menu from the UI — no touching the database directly.
-
-**What to do**
-
-- Server: `POST /api/dishes`, `PUT /api/dishes/:id`, `DELETE /api/dishes/:id`; `POST /api/dishes/:id/images` (multipart via multer → `data/uploads/`, served at `/uploads`); category creation inline (an unknown category name in a dish create upserts a new category).
-- Client: dish form page (`/dish/new`, `/dish/:id/edit`) — name, category (select + new-category input), dynamic 食材 rows (name + amount), 佐料 rows, 做法 textarea, multi-file photo upload with preview. Delete button with confirmation.
-
-**How to implement**
-
-- Form as a controlled React component; dynamic ingredient rows = array in state with add/remove buttons.
-- Upload: accept jpg/png/webp, cap at ~10 MB per file, return validation errors the form displays.
-- After save: navigate to the new dish's detail page.
-
-**Acceptance criteria**
-
-- [ ] A dish created with photos and 3 食材 appears on the homepage and detail page correctly.
-- [ ] Editing changes persist; deleting (after confirm) removes the dish and its files.
-- [ ] Oversized or wrong-type uploads are rejected with a clear message.
-- [ ] A new category typed into the form appears as a homepage section.
-
 ### TASK-006 — Choose dishes from the homepage with batch sync
 
 **Goal**
@@ -323,7 +297,6 @@ Every page honestly satisfies AGENTS.md rule 4 (phone / tablet / desktop) and fa
 - Ensure all media queries live in companion `.css` files (not in style objects), per the conventions.
 - Add missing loading / error / empty states to any fetch-driven view.
 - Add a 404 page for unknown routes.
-- Form validation messages from TASK-005 render inline.
 
 **How to implement**
 
@@ -332,7 +305,7 @@ Every page honestly satisfies AGENTS.md rule 4 (phone / tablet / desktop) and fa
 
 **Acceptance criteria**
 
-- [ ] Home, detail, form, cart, and stats pages are usable at all three widths.
+- [ ] Home, detail, cart, and stats pages are usable at all three widths.
 - [ ] No interaction requires hover to be discoverable.
 - [ ] Every fetch has loading/error/empty handling; a stopped server never yields a blank page.
 - [ ] `npm run lint` and `npm run format` still pass.
@@ -364,9 +337,10 @@ The app runs as one server outside development: Express serves the built client,
 
 ## Post-MVP (fun ideas, in suggested order)
 
-1. **Shopping list** — aggregate the cart's 食材 into a grouped checklist (盐/油/菜…), printable.
-2. **今天吃什么** — a random dish picker, optionally filtered by category. The eternal family question, solved.
-3. **Dish ratings (⭐)** — a "family favorites" filter and stats weighted by rating.
-4. **Weekly meal plan** — pick 7 dishes onto a calendar; cart confirms feed it.
-5. **Structured 做法 steps** — split the 做法 text (currently free text in `description`) into a numbered list with a big-text "cooking mode".
-6. **中/EN language toggle** — if the family is bilingual.
+1. **Adding dishes through an API** — a write API (`POST /api/dishes`, `POST /api/dishes/:id/images`) instead of a hand-built form, so a dish can be added by an AI assistant from a photo or a free-text recipe rather than typed field by field. Until then, dishes come from `server/seed.js`.
+2. **Shopping list** — aggregate the cart's 食材 into a grouped checklist (盐/油/菜…), printable.
+3. **今天吃什么** — a random dish picker, optionally filtered by category. The eternal family question, solved.
+4. **Dish ratings (⭐)** — a "family favorites" filter and stats weighted by rating.
+5. **Weekly meal plan** — pick 7 dishes onto a calendar; cart confirms feed it.
+6. **Structured 做法 steps** — split the 做法 text (currently free text in `description`) into a numbered list with a big-text "cooking mode".
+7. **中/EN language toggle** — if the family is bilingual.
