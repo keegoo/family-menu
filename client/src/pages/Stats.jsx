@@ -25,9 +25,9 @@ const STYLES = {
     textAlign: 'center',
     flexShrink: 0
   },
-  rankGold: { color: '#f9a825', color: '#fff' },
-  rankSilver: { color: '#9e9e9e', color: '#fff' },
-  rankBronze: { color: '#bf6a2e', color: '#fff' },
+  rankGold: { background: '#f9a825', color: '#fff' },
+  rankSilver: { background: '#9e9e9e', color: '#fff' },
+  rankBronze: { background: '#bf6a2e', color: '#fff' },
   thumb: {
     width: 56,
     height: 56,
@@ -87,7 +87,7 @@ export default function Stats() {
   if (state.status === 'error') {
     return (
       <div style={STYLES.error}>
-        <p>统计数据加载失败 - 请确认后段服务器已启动</p>
+        <p>统计数据加载失败 - 请确认后端服务器已启动</p>
         <p style={STYLES.errorDetail}>{state.message}</p>
       </div>
     )
