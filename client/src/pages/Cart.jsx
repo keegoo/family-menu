@@ -22,7 +22,7 @@ const STYLES = {
   rowInfo: { flex: 1, minWidth: 0 },
   rowName: { margin: 0, fontSize: 15, fontWeight: 500 },
   rowCategory: { margin: '2px 0 0', fontSize: 12, color: '#999' },
-  remove: {
+  removeButton: {
     border: 'none',
     background: 'transparent',
     color: '#c62828',
@@ -130,7 +130,7 @@ export default function Cart({ onRemove, onConfirmed }) {
             <p style={STYLES.rowName}>{item.name}</p>
             <p style={STYLES.rowCategory}>{item.category}</p>
           </div>
-          <button type="button" style={STYLES.removeButton} onClick={() => handleRemove(item.dish_id)}>移除</button>
+          <button type="button" style={STYLES.removeButton} onClick={() => handleRemove(item)}>移除</button>
         </div>
       ))}
 

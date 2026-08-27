@@ -87,7 +87,7 @@ A personal web app for the family to browse the home menu (菜谱), see dish det
 
 **Recommendation**: One server-side cart in the DB, no login.
 
-**Why**: A family app's point is that anyone's phone sees the same cart. Server-side also makes stats accurate. No auth keeps setup simple — it runs on the home network.
+**Why**: A family app's point is that anyone's phone ends up seeing the same cart. Local state makes toggles instant and avoids a request per tap; the server persists the selection across devices and reloads, and stats confirm against it. No auth keeps setup simple — it runs on the home network.
 
 **Alternative**: Per-device `localStorage` carts (no backend work, but carts aren't shared). If the app is later exposed to the internet, add a single shared password/PIN in front of it (a small middleware), not full accounts.
 
@@ -197,7 +197,7 @@ The homepage renders dishes fetched from the database through the API, grouped i
 - [ ] Unknown id shows a friendly not-found; broken API shows an error state.
 - [ ] Readable at phone width.
 
-### TASK-006 — Choose dishes from the homepage with batch sync
+### TASK-005 — Choose dishes from the homepage with batch sync
 
 **Goal**
 
@@ -220,7 +220,7 @@ Anyone can choose dishes for the shared family selection from the homepage. A di
 - [ ] The 详情 link opens the detail page without toggling the dish.
 - [ ] Works on phone and desktop.
 
-### TASK-007 — Cart summary page: date/time plan and confirm
+### TASK-006 — Cart summary page: date/time plan and confirm
 
 **Goal**
 
@@ -243,7 +243,7 @@ Tapping the 🛒 icon opens a summary page of the chosen dishes, where the famil
 - [ ] Confirm increments each chosen dish's stats by exactly 1 and empties the selection.
 - [ ] Empty selection shows a friendly hint linking back to the menu.
 
-### TASK-008 — Statistics view
+### TASK-007 — Statistics view
 
 **Goal**
 
@@ -264,7 +264,7 @@ A popularity page: dishes ranked by order count, showing how often the family co
 - [ ] Counts and ordering survive reloads.
 - [ ] Renders reasonably on a phone.
 
-### TASK-009 — Backup API
+### TASK-008 — Backup API
 
 **Goal**
 
@@ -285,7 +285,7 @@ One-click backup: download the entire app's data (database + photos) as a zip, f
 - [ ] Downloading `/api/backup` yields a zip containing the db and all uploaded photos.
 - [ ] Unzipping it into a fresh checkout and starting the server shows identical data (test this once).
 
-### TASK-010 — Responsive and reliability pass
+### TASK-009 — Responsive and reliability pass
 
 **Goal**
 
@@ -308,9 +308,9 @@ Every page honestly satisfies AGENTS.md rule 4 (phone / tablet / desktop) and fa
 - [ ] Home, detail, cart, and stats pages are usable at all three widths.
 - [ ] No interaction requires hover to be discoverable.
 - [ ] Every fetch has loading/error/empty handling; a stopped server never yields a blank page.
-- [ ] `npm run lint` and `npm run format` still pass.
+- [ ] `npm run lint` pass.
 
-### TASK-011 — Production build and deployment
+### TASK-010 — Production build and deployment
 
 **Goal**
 
@@ -343,4 +343,3 @@ The app runs as one server outside development: Express serves the built client,
 4. **Dish ratings (⭐)** — a "family favorites" filter and stats weighted by rating.
 5. **Weekly meal plan** — pick 7 dishes onto a calendar; cart confirms feed it.
 6. **Structured 做法 steps** — split the 做法 text (currently free text in `description`) into a numbered list with a big-text "cooking mode".
-7. **中/EN language toggle** — if the family is bilingual.
