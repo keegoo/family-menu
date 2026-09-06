@@ -2,8 +2,11 @@
   "name": "family-menu",
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
-    "dev": "concurrently -n api,web -c blue,green \"node --watch server/index.js\" \"vite\"",
+    "dev": "concurrently -n api,web -c blue,green 'node --watch server/index.js' 'vite'",
     "seed": "node server/seed.js",
     "build": "vite build",
     "lint": "eslint ."
