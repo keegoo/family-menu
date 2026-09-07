@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- warm background -->
+  <rect width="64" height="64" rx="14" fill="#FFF3D6"/>
+
+  <!-- bowl -->
+  <path
+    d="M11 32
+       C12 46 20 54 32 54
+       C44 54 52 46 53 32
+       Z"
+    fill="#E85D2A"
+  />
+
+  <!-- bowl rim -->
+  <path
+    d="M9 30
+       C9 27 13 25 18 25
+       H46
+       C51 25 55 27 55 30
+       C55 33 51 35 46 35
+       H18
+       C13 35 9 33 9 30
+       Z"
+    fill="#F47B3A"
+  />
+
+  <!-- noodles -->
+  <g
+    fill="none"
+    stroke="#FFD166"
+    stroke-width="2.4"
+    stroke-linecap="round"
+  >
+    <path d="M20 29 C18 24 22 20 27 22 C31 24 27 28 30 30" />
+    <path d="M25 30 C23 25 27 21 31 23 C35 25 31 29 34 30" />
+    <path d="M30 30 C28 25 32 21 36 23 C40 25 36 29 39 30" />
+    <path d="M35 30 C34 25 38 21 42 23 C46 25 42 29 44 30" />
+  </g>
+
+  <!-- chopsticks -->
+  <g
+    fill="none"
+    stroke="#6B3E26"
+    stroke-width="2.8"
+    stroke-linecap="round"
+  >
+    <path d="M18 9 L36 27" />
+    <path d="M24 7 L42 25" />
+  </g>
+
+  <!-- lifted noodles -->
+  <g
+    fill="none"
+    stroke="#FFD166"
+    stroke-width="2.2"
+    stroke-linecap="round"
+  >
+    <path d="M35 26 C32 21 34 17 37 15 C40 13 40 10 38 8" />
+    <path d="M39 25 C36 20 38 17 41 15 C44 13 44 10 42 8" />
+    <path d="M43 25 C41 21 42 18 45 16 C47 14 47 12 46 10" />
+  </g>
+</svg>
