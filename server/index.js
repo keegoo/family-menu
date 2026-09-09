@@ -10,6 +10,9 @@ const PORT = process.env.PORT || 3000
 
 app.use(express.json())
 
+// Serves the built client (including dish images) from server/public in production
+app.use(express.static(path.join(import.meta.dirname, 'public')))
+
 const dishListQuery = db.prepare(`
   SELECT
     dishes.id,

@@ -1,4 +1,11 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import db from './db.js'
+
+// Authored dish images live in the repo, served as static files at /dishes/...
+const DISH_IMAGES_DIR = path.join(import.meta.dirname, '..', 'client', 'public', 'dishes')
+// First view becomes the main image and card cover
+const VIEWS = ['侧视图', '俯视图']
 
 const categories = [
   { name: '炒菜', sort: 1 },
@@ -84,7 +91,6 @@ const seed = db.transaction(() => {
   db.prepare('DELETE FROM dishes').run()
   db.prepare('DELETE FROM categories').run()
 
-
   const insertCategory = db.prepare(
     'INSERT INTO categories (name, sort) VALUES (?, ?)'
   )
@@ -96,6 +102,9 @@ const seed = db.transaction(() => {
   )
   const insertSeasoning = db.prepare(
     'INSERT INTO seasonings (dish_id, name, amount, sort) VALUES (?, ?, ?, ?)'
+  )
+  const insertImage = db.prepare(
+    'INSERT INTO dish_images (dish_id, path, sort) VALUES (?, ?, ?)'
   )
   const findCategory = db.prepare('SELECT id FROM categories WHERE name = ?')
 
@@ -113,6 +122,14 @@ const seed = db.transaction(() => {
     d.seasonings.forEach((sea, i) => {
       insertSeasoning.run(dishId, sea.name, sea.amount, i + 1)
     })
+    VIEWS.forEach((view, i) => {
+      const filename = `${d.name}_${view}.svg`
+      if (fs.existsSync(path.join(DISH_IMAGES_DIR, filename))) {
+        insertImage.run(dishId, `/dishes/${filename}`, i + 1)
+      } else {
+        console.warn(`Missing image file: ${filename}`)
+      }
+    })
   }
 })
 
@@ -120,4 +137,5 @@ seed()
 
 const dishCount = db.prepare('SELECT COUNT(*) AS n FROM dishes').get().n
 const categoryCount = db.prepare('SELECT COUNT(*) AS n FROM categories').get().n
-console.log(`Seeded ${categoryCount} categories and ${dishCount} dishes`)
+const imageCount = db.prepare('SELECT COUNT(*) AS n FROM dish_images').get().n
+console.log(`Seeded ${categoryCount} categories, ${dishCount} dishes and ${imageCount} images`)

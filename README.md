@@ -23,6 +23,10 @@ SQLite lives in `data/family-menu.db`.
 ~$ rm -rf data/ && npm run seed
 ```
 
+## Dish images
+
+Authored dish images are versioned with the repo in `client/public/dishes/`, named `<dish>_侧视图.svg` (side view) and `<dish>_俯视图.svg` (top view). `npm run seed` stores their `/dishes/...` URLs in the database.
+
 ## Backup & Restore
 
 Download everything (database + photos) as one zip:

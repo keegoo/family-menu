@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#FFF4DA"/>
+  <path d="M9 30C10 46 20 54 32 54S54 46 55 30H9Z" fill="#D99A48"/>
+  <ellipse cx="32" cy="30" rx="24" ry="8" fill="#F3C875"/>
+
+  <!-- radish -->
+  <g fill="#FFF9E8">
+    <path d="M16 27L21 22L27 27L22 33Z"/>
+    <path d="M30 25L35 20L41 26L36 32Z"/>
+    <path d="M38 31L44 26L49 31L43 36Z"/>
+  </g>
+
+  <!-- ribs -->
+  <g fill="#A85D35">
+    <path d="M20 29C20 25 24 24 27 26L31 29L28 33L24 31C21 33 19 32 20 29Z"/>
+    <path d="M32 28C33 24 37 24 40 26L44 29L41 33L37 31C34 33 31 31 32 28Z"/>
+  </g>
+
+  <!-- bones -->
+  <g fill="#F8E7C1">
+    <circle cx="21" cy="27" r="2.5"/>
+    <circle cx="42" cy="27" r="2.5"/>
+  </g>
+</svg>

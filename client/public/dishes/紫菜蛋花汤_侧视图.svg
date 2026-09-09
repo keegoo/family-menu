@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#FFF4DA"/>
+
+  <!-- bowl -->
+  <path d="M10 30C11 45 20 53 32 53S53 45 54 30H10Z" fill="#D88B42"/>
+  <ellipse cx="32" cy="30" rx="23" ry="8" fill="#F8D98B"/>
+
+  <!-- soup -->
+  <ellipse cx="32" cy="30" rx="20" ry="6" fill="#FFF2BF"/>
+
+  <!-- seaweed -->
+  <g fill="none" stroke="#315C3A" stroke-width="3" stroke-linecap="round">
+    <path d="M18 29C21 26 22 32 25 29"/>
+    <path d="M28 28C31 25 32 32 35 28"/>
+    <path d="M39 29C42 26 43 32 46 28"/>
+  </g>
+
+  <!-- egg ribbons -->
+  <g fill="none" stroke="#FFFDF1" stroke-width="2.5" stroke-linecap="round">
+    <path d="M19 27C23 30 26 25 29 28"/>
+    <path d="M29 30C33 33 36 26 40 29"/>
+    <path d="M38 27C41 30 44 27 46 30"/>
+  </g>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <circle cx="256" cy="256" r="220" fill="#fff7e8"/>
+  <ellipse cx="256" cy="270" rx="190" ry="170" fill="#e86f32"/>
+  <ellipse cx="256" cy="245" rx="170" ry="150" fill="#fffdf5"/>
+
+  <!-- rice grains -->
+  <g fill="#f4eee0">
+    <ellipse cx="190" cy="215" rx="16" ry="9" transform="rotate(25 190 215)"/>
+    <ellipse cx="225" cy="185" rx="17" ry="9" transform="rotate(-15 225 185)"/>
+    <ellipse cx="270" cy="190" rx="16" ry="9" transform="rotate(18 270 190)"/>
+    <ellipse cx="315" cy="215" rx="17" ry="9" transform="rotate(-20 315 215)"/>
+    <ellipse cx="170" cy="260" rx="17" ry="9" transform="rotate(-12 170 260)"/>
+    <ellipse cx="210" cy="245" rx="16" ry="9" transform="rotate(20 210 245)"/>
+    <ellipse cx="255" cy="235" rx="17" ry="9" transform="rotate(-8 255 235)"/>
+    <ellipse cx="300" cy="250" rx="16" ry="9" transform="rotate(18 300 250)"/>
+    <ellipse cx="345" cy="260" rx="17" ry="9" transform="rotate(-15 345 260)"/>
+    <ellipse cx="200" cy="295" rx="17" ry="9" transform="rotate(-18 200 295)"/>
+    <ellipse cx="250" cy="285" rx="16" ry="9" transform="rotate(15 250 285)"/>
+    <ellipse cx="305" cy="300" rx="17" ry="9" transform="rotate(-12 305 300)"/>
+  </g>
+</svg>

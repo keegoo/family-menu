@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <circle cx="256" cy="256" r="220" fill="#fff7e8"/>
+  <ellipse cx="256" cy="270" rx="190" ry="170" fill="#e86f32"/>
+  <ellipse cx="256" cy="245" rx="170" ry="150" fill="#f1c978"/>
+
+  <!-- radish -->
+  <g fill="#fffaf0">
+    <path d="M135 205l48-18 25 43-48 24z"/>
+    <path d="M205 290l51-17 24 44-51 22z"/>
+    <path d="M315 185l48-15 23 43-48 22z"/>
+    <path d="M330 300l49-17 22 43-48 22z"/>
+  </g>
+
+  <!-- ribs -->
+  <g fill="#a85a36">
+    <path d="M150 275c28-31 57-39 79-20l-17 29c-23 19-47 25-68 9z"/>
+    <path d="M215 180c29-28 58-31 76-9l-14 28c-24 16-47 19-66 3z"/>
+    <path d="M270 270c28-30 59-36 78-14l-17 29c-23 17-46 21-66 4z"/>
+  </g>
+
+  <!-- bone centers -->
+  <g fill="#f2d5a5">
+    <ellipse cx="195" cy="258" rx="12" ry="9"/>
+    <ellipse cx="268" cy="185" rx="12" ry="9"/>
+    <ellipse cx="316" cy="274" rx="12" ry="9"/>
+  </g>
+
+  <!-- scallion -->
+  <g fill="#579b42">
+    <path d="M185 330c25-30 48-49 69-56l7 12c-20 20-39 39-59 61z"/>
+    <path d="M285 340c15-30 33-53 56-68l9 11c-17 23-32 45-48 72z"/>
+  </g>
+</svg>

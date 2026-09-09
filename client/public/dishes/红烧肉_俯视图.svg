@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <circle cx="256" cy="256" r="220" fill="#fff7e8"/>
+  <ellipse cx="256" cy="270" rx="190" ry="170" fill="#e86f32"/>
+  <ellipse cx="256" cy="245" rx="170" ry="150" fill="#6d2d20"/>
+
+  <!-- pork cubes -->
+  <g fill="#9d3e25">
+    <rect x="145" y="160" width="72" height="65" rx="14" transform="rotate(-12 181 192)"/>
+    <rect x="230" y="145" width="76" height="68" rx="14" transform="rotate(10 268 179)"/>
+    <rect x="315" y="180" width="70" height="65" rx="14" transform="rotate(-8 350 212)"/>
+    <rect x="125" y="245" width="75" height="67" rx="14" transform="rotate(8 162 278)"/>
+    <rect x="215" y="235" width="80" height="70" rx="15" transform="rotate(-6 255 270)"/>
+    <rect x="305" y="260" width="76" height="67" rx="14" transform="rotate(12 343 293)"/>
+    <rect x="180" y="325" width="78" height="65" rx="14" transform="rotate(-8 219 357)"/>
+    <rect x="270" y="325" width="75" height="64" rx="14" transform="rotate(7 307 357)"/>
+  </g>
+
+  <!-- glossy highlights -->
+  <g fill="#d96a38">
+    <rect x="158" y="170" width="35" height="10" rx="5" transform="rotate(-12 175 175)"/>
+    <rect x="242" y="154" width="38" height="10" rx="5" transform="rotate(10 261 159)"/>
+    <rect x="316" y="190" width="34" height="9" rx="5"/>
+    <rect x="228" y="246" width="38" height="10" rx="5"/>
+    <rect x="192" y="336" width="35" height="9" rx="5"/>
+  </g>
+</svg>
