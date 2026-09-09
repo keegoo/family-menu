@@ -68,6 +68,20 @@ const dishes = [
     ]
   },
   {
+    name: '吮指鸡翅',
+    category: '炖菜',
+    description: '香郁流油，好吃到舔手指',
+    ingredients: [
+      { name: '鸡翅', amount: '8个' },
+      { name: '土豆', amount: '2个' }
+    ],
+    seasonings: [
+      { name: '生抽', amount: '2勺' },
+      { name: '老抽', amount: '1勺' },
+      { name: '冰糖', amount: '10克' }
+    ]
+  },
+  {
     name: '米饭',
     category: '主食',
     description: '基础主食',
