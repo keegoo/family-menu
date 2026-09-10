@@ -14,10 +14,6 @@
     }
 }
 
-.dish-card {
-    cursor: pointer;
-}
-
 .dish-card:hover:not(:disabled) {
     border-color: #33691e;
 }

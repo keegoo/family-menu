@@ -18,7 +18,8 @@ const STYLES = {
     background: '#fff',
     color: 'inherit',
     font: 'inherit',
-    textAlign: 'left'
+    textAlign: 'left',
+    cursor: 'pointer'
   },
   cardSelected: { borderColor: '#33691e' },
   cover: { width: '100%', height: 160, objectFit: 'cover', display: 'block' },

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { getDish } from '../api.js'
-import './Dish.css'
 
 const STYLES = {
   content: { maxWidth: 640, margin: '0 auto'},
@@ -30,6 +29,26 @@ const STYLES = {
     fontSize: 64,
     background: '#f0f0f0',
     borderRadius: 8
+  },
+  mainImage: {
+    width: '100%',
+    aspectRatio: '4 / 3',
+    objectFit: 'cover',
+    borderRadius: 8,
+    display: 'block'
+  },
+  thumbRow: {
+    display: 'flex',
+    gap: 8,
+    marginTop: 8,
+    overflowX: 'auto'
+  },
+  thumb: {
+    width: 96,
+    height: 72,
+    objectFit: 'cover',
+    borderRadius: 4,
+    flexShrink: 0
   },
   description: { fontSize: 15, color: '#444', lineHeight: 1.6 },
   sectionTitle: { fontSize: 18, fontWeight: 600, margin: '24px 0 8px' },
@@ -100,11 +119,11 @@ export default function Dish() {
         dish.images.length > 0
           ? (
               <>
-                <img className="dish-main-image" src={dish.images[0].path} alt={dish.name} />
+                <img style={STYLES.mainImage} src={dish.images[0].path} alt={dish.name} />
                 {dish.images.length > 1 && (
-                  <div className="dish-thumb-row">
+                  <div style={STYLES.thumbRow}>
                     {dish.images.slice(1).map(image => (
-                      <img key={image.id} className="dish-thumb" src={image.path} alt="" />
+                      <img key={image.id} style={STYLES.thumb} src={image.path} alt="" />
                     ))}
                   </div>
                 )}
