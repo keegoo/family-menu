@@ -9,7 +9,8 @@
     "dev": "concurrently -n api,web -c blue,green 'node --watch server/index.js' 'vite'",
     "seed": "node server/seed.js",
     "build": "vite build",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:server": "node --test server"
   },
   "dependencies": {
     "archiver": "^8.0.0",

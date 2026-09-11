@@ -1,13 +1,8 @@
-import fs from 'node:fs'
-import path from 'node:path'
 import db from './db.js'
+import { findDishImage, IMAGE_EXTS } from './dish-images.js'
 
-// Dish images served as static files at client/public/dishes/
-const DISH_IMAGES_DIR = path.join(import.meta.dirname, '..', 'client', 'public', 'dishes')
 // First view becomes the main image and card cover
 const VIEWS = ['侧视图', '俯视图']
-// png first: once real photos land, they win over the old svg placeholder
-const IMAGE_EXTS = ['png', 'svg']
 
 const categories = [
   { name: '炒菜', sort: 1 },
@@ -139,9 +134,7 @@ const seed = db.transaction(() => {
       insertSeasoning.run(dishId, sea.name, sea.amount, i + 1)
     })
     VIEWS.forEach((view, i) => {
-      const filename = IMAGE_EXTS
-        .map(ext => `${d.name}_${view}.${ext}`)
-        .find(name => fs.existsSync(path.join(DISH_IMAGES_DIR, name)))
+      const filename = findDishImage(d.name, view)
       if (filename) {
         insertImage.run(dishId, `/dishes/${filename}`, i + 1)
       } else {
