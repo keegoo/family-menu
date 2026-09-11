@@ -11,7 +11,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "test": "npm run test:server && npm run test:client",
-    "test:server": "node --test server",
+    "test:server": "node --test server/**/*.test.js",
     "test:client": "vitest run"
   },
   "dependencies": {
