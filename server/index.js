@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import express from 'express'
 import { ZipArchive } from 'archiver'
-import db, { DATA_DIR, transaction } from './db.js'
+import db, { DATA_DIR, queries, transaction } from './db.js'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -13,115 +13,12 @@ app.use(express.json())
 // Serves the built client (including dish images) from server/public in production
 app.use(express.static(path.join(import.meta.dirname, 'public')))
 
-const dishListQuery = db.prepare(`
-  SELECT
-    dishes.id,
-    dishes.name,
-    dishes.description,
-    dishes.category_id,
-    categories.name AS category,
-    (
-      SELECT path FROM dish_images
-      WHERE dish_id = dishes.id
-      ORDER BY dish_images.sort
-      LIMIT 1
-    ) AS cover
-  FROM dishes
-  JOIN categories ON dishes.category_id = categories.id
-  ORDER BY categories.sort, dishes.name
-`)
-
-const dishDetailQuery = db.prepare(`
-  SELECT
-    dishes.id,
-    dishes.name,
-    dishes.description,
-    dishes.category_id,
-    categories.name AS category
-  FROM dishes
-  JOIN categories ON dishes.category_id = categories.id
-  WHERE dishes.id = ?
-`)
-
-const dishImagesQuery = db.prepare(
-  'SELECT id, path FROM dish_images where dish_id = ? ORDER BY sort, id'
-)
-
-const dishIngredientsQuery = db.prepare(
-  'SELECT id, name, amount FROM ingredients WHERE dish_id = ? ORDER BY sort, id'
-)
-
-const dishSeasoningsQuery = db.prepare(
-  'SELECT id, name, amount FROM seasonings WHERE dish_id = ? ORDER BY sort, id'
-)
-
-const categoryListQuery = db.prepare('SELECT id, name FROM categories ORDER BY sort, id')
-
-const cartListQuery = db.prepare(`
-  SELECT
-    cart_items.id,
-    cart_items.dish_id,
-    dishes.name,
-    categories.name AS category,
-    (
-      SELECT path FROM dish_images
-      WHERE dish_id = dishes.id
-      ORDER BY dish_images.sort
-      LIMIT 1
-    ) AS cover
-  FROM cart_items
-  JOIN dishes ON cart_items.dish_id = dishes.id
-  JOIN categories ON dishes.category_id = categories.id
-  ORDER BY cart_items.created_at, cart_items.id
-`)
-
-const statsListQuery = db.prepare(`
-  SELECT
-    dishes.id,
-    dishes.name,
-    COALESCE(order_stats.count, 0) AS order_count,
-    (
-      SELECT path FROM dish_images
-      WHERE dish_id = dishes.id
-      ORDER BY dish_images.sort
-      LIMIT 1
-    ) AS cover
-  FROM dishes
-  LEFT JOIN order_stats ON order_stats.dish_id = dishes.id
-  ORDER BY order_count DESC, dishes.name
-`)
-
-const totalOrdersQuery = db.prepare('SELECT COALESCE(SUM(count), 0) AS total_orders FROM order_stats')
-
-const dishExistsQuery = db.prepare('SELECT id FROM dishes WHERE id = ?')
-
-const addCartItemQuery = db.prepare(`
-  INSERT INTO cart_items (dish_id) VALUES (?)
-  ON CONFLICT(dish_id) DO NOTHING
-`)
-
-const cartItemQuery = db.prepare('SELECT id, dish_id FROM cart_items WHERE dish_id = ?')
-
-const deleteCartItemQuery = db.prepare('DELETE FROM cart_items WHERE dish_id = ?')
-
-const clearCartQuery = db.prepare('DELETE FROM cart_items')
-
-const upsertOrderStatQuery = db.prepare(`
-  INSERT INTO order_stats (dish_id, count, last_ordered_at) VALUES (?, 1, ?)
-  ON CONFLICT(dish_id)
-  DO UPDATE SET
-    count = count + 1,
-    last_ordered_at = excluded.last_ordered_at
-`)
-
-const insertCartItemQuery = db.prepare('INSERT INTO cart_items (dish_id) VALUES (?)')
-
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() })
 })
 
 app.get('/api/dishes', (req, res) => {
-  res.json(dishListQuery.all())
+  res.json(queries.dishList.all())
 })
 
 app.get('/api/dishes/:id', (req, res) => {
@@ -129,22 +26,22 @@ app.get('/api/dishes/:id', (req, res) => {
   if (!Number.isInteger(id) || id <= 0) {
     return res.status(400).json({ error: 'Dish not found' })
   }
-  const dish = dishDetailQuery.get(id)
+  const dish = queries.dishDetail.get(id)
   if (!dish) return res.status(404).json({ error: 'Dish not found' })
   res.json({
     ...dish,
-    images: dishImagesQuery.all(id),
-    ingredients: dishIngredientsQuery.all(id),
-    seasonings: dishSeasoningsQuery.all(id)
+    images: queries.dishImages.all(id),
+    ingredients: queries.dishIngredients.all(id),
+    seasonings: queries.dishSeasonings.all(id)
   })
 })
 
 app.get('/api/categories', (req, res) => {
-  res.json(categoryListQuery.all())
+  res.json(queries.categoryList.all())
 })
 
 app.get('/api/cart', (req, res) => {
-  const items = cartListQuery.all()
+  const items = queries.cartList.all()
   res.json({ items, count: items.length })
 })
 
@@ -153,11 +50,11 @@ app.post('/api/cart/items', (req, res) => {
   if (!Number.isInteger(dishId) || dishId <= 0) {
     return res.status(400).json({ error: 'dishId is required' })
   }
-  if (!dishExistsQuery.get(dishId)) {
+  if (!queries.dishExists.get(dishId)) {
     return res.status(404).json({ error: 'Dish not found' })
   }
-  addCartItemQuery.run(dishId)
-  res.json(cartItemQuery.get(dishId))
+  queries.addCartItem.run(dishId)
+  res.json(queries.cartItem.get(dishId))
 })
 
 app.delete('/api/cart/items/:dishId', (req, res) => {
@@ -165,10 +62,10 @@ app.delete('/api/cart/items/:dishId', (req, res) => {
   if (!Number.isInteger(dishId) || dishId <= 0) {
     return res.status(400).json({ error: 'dishId is required' })
   }
-  if (!cartItemQuery.get(dishId)) {
+  if (!queries.cartItem.get(dishId)) {
     return res.status(404).json({ error: 'Dish not in selection' })
   }
-  deleteCartItemQuery.run(dishId)
+  queries.deleteCartItem.run(dishId)
   res.json({ removed: dishId })
 })
 
@@ -178,8 +75,8 @@ app.put('/api/cart', (req, res) => {
     return res.status(400).json({ error: 'dishIds must be an array of dish ids' })
   }
   transaction(() => {
-    clearCartQuery.run()
-    for (const id of new Set(dishIds)) insertCartItemQuery.run(id)
+    queries.clearCart.run()
+    for (const id of new Set(dishIds)) queries.insertCartItem.run(id)
   })
   res.json({ count: dishIds.length })
 })
@@ -189,21 +86,21 @@ app.post('/api/cart/confirm', (req, res) => {
     ? req.body.dateTime
     : new Date().toISOString())
 
-  const items = cartListQuery.all()
+  const items = queries.cartList.all()
   if (items.length === 0) {
     return res.status(400).json({ error: 'Cart is empty' })
   }
   transaction(() => {
-    for (const item of items) upsertOrderStatQuery.run(item.dish_id, confirmedAt)
-    clearCartQuery.run()
+    for (const item of items) queries.upsertOrderStat.run(item.dish_id, confirmedAt)
+    queries.clearCart.run()
   })
   res.json({ confirmed: items.map(item => item.dish_id), confirmedAt })
 })
 
 app.get('/api/stats', (req, res) => {
   res.json({
-    dishes: statsListQuery.all(),
-    total_orders: totalOrdersQuery.get().total_orders
+    dishes: queries.statsList.all(),
+    total_orders: queries.totalOrders.get().total_orders
   })
 })
 
