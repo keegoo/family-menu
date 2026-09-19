@@ -213,8 +213,7 @@ app.get('/api/backup', async (req, res) => {
   const uploadsDir = path.join(DATA_DIR, 'uploads')
 
   try {
-    // node:sqlite has no backup API — VACUUM INTO writes a consistent snapshot
-    db.exec(`VACUUM INTO '${snapshot.replace(/'/g, "''")}'`)
+    db.exec(`VACUUM INTO '${snapshot}'`)
   } catch (err) {
     console.error(err)
     return res.status(500).json({ error: 'Backup failed' })
