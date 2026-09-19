@@ -1,4 +1,4 @@
-import db from './db.js'
+import db, { transaction } from './db.js'
 import { findDishImage, IMAGE_EXTS } from './dish-images.js'
 
 // First view becomes the main image and card cover
@@ -98,7 +98,7 @@ const dishes = [
   }
 ]
 
-const seed = db.transaction(() => {
+transaction(() => {
   db.prepare('DELETE FROM dishes').run()
   db.prepare('DELETE FROM categories').run()
 
@@ -143,8 +143,6 @@ const seed = db.transaction(() => {
     })
   }
 })
-
-seed()
 
 const dishCount = db.prepare('SELECT COUNT(*) AS n FROM dishes').get().n
 const categoryCount = db.prepare('SELECT COUNT(*) AS n FROM categories').get().n
