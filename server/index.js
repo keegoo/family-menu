@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import express from 'express'
 import { ZipArchive } from 'archiver'
-import db, { DATA_DIR } from './db.js'
+import db, { DATA_DIR, transaction } from './db.js'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -177,11 +177,10 @@ app.put('/api/cart', (req, res) => {
   if (!Array.isArray(dishIds) || dishIds.some(id => !Number.isInteger(id) || id <= 0)) {
     return res.status(400).json({ error: 'dishIds must be an array of dish ids' })
   }
-  const replaceCart = db.transaction(ids => {
+  transaction(() => {
     clearCartQuery.run()
-    for (const id of new Set(ids)) insertCartItemQuery.run(id)
+    for (const id of new Set(dishIds)) insertCartItemQuery.run(id)
   })
-  replaceCart(dishIds)
   res.json({ count: dishIds.length })
 })
 
@@ -190,16 +189,14 @@ app.post('/api/cart/confirm', (req, res) => {
     ? req.body.dateTime
     : new Date().toISOString())
 
-  const confirm = db.transaction(items => {
-    for (const item of items) upsertOrderStatQuery.run(item.dish_id, confirmedAt)
-    clearCartQuery.run()
-  })
-
   const items = cartListQuery.all()
   if (items.length === 0) {
     return res.status(400).json({ error: 'Cart is empty' })
   }
-  confirm(items)
+  transaction(() => {
+    for (const item of items) upsertOrderStatQuery.run(item.dish_id, confirmedAt)
+    clearCartQuery.run()
+  })
   res.json({ confirmed: items.map(item => item.dish_id), confirmedAt })
 })
 
@@ -216,7 +213,7 @@ app.get('/api/backup', async (req, res) => {
   const uploadsDir = path.join(DATA_DIR, 'uploads')
 
   try {
-    await db.backup(snapshot)
+    db.exec(`VACUUM INTO '${snapshot}'`)
   } catch (err) {
     console.error(err)
     return res.status(500).json({ error: 'Backup failed' })
